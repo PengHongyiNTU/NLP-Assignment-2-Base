@@ -50,7 +50,7 @@ class BiLSTM_CRF(nn.Module):
             
             #Performing LSTM encoding on the character embeddings
             if self.char_mode == 'LSTM':
-                self.char_lstm = nn.LSTM(char_embedding_dim, char_lstm_dim, num_layers=1, bidirectional=True)
+                self.char_lstm = nn.LSTM(char_embedding_dim, self.char_lstm_dim, num_layers=1, bidirectional=True)
                 init_lstm(self.char_lstm)
                 
             #Performing CNN encoding on the character embeddings
@@ -73,7 +73,7 @@ class BiLSTM_CRF(nn.Module):
         #input dimension: word embedding dimension + character level representation
         #bidirectional=True, specifies that we are using the bidirectional LSTM
         if self.char_mode == 'LSTM':
-            self.lstm = nn.LSTM(embedding_dim+char_lstm_dim*2, hidden_dim, bidirectional=True)
+            self.lstm = nn.LSTM(embedding_dim+self.char_lstm_dim*2, hidden_dim, bidirectional=True)
         if self.char_mode == 'CNN':
             self.lstm = nn.LSTM(embedding_dim+self.out_channels, hidden_dim, bidirectional=True)
         
@@ -117,7 +117,8 @@ class BiLSTM_CRF(nn.Module):
         
             chars_embeds = self.char_embeds(chars2).transpose(0, 1)
             
-            packed = torch.nn.utils.rnn.pack_padded_sequence(chars_embeds, chars2_length)
+            packed = torch.nn.utils.rnn.pack_padded_sequence(chars_embeds, chars2_length, 
+                                                             enforce_sorted=False)
             
             lstm_out, _ = self.char_lstm(packed)
             
@@ -135,7 +136,9 @@ class BiLSTM_CRF(nn.Module):
             
             chars_embeds = chars_embeds_temp.clone()
             
-            for i in range(chars_embeds.size(0)):
+            # print(chars_embeds.shape)
+            # print(type(chars_embeds))
+            for i in range(chars_embeds.shape[0]):
                 chars_embeds[d[i]] = chars_embeds_temp[i]
     
     
