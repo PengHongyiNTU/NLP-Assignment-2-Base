@@ -4,6 +4,8 @@ from torch.autograd import Variable
 import torch
 
 def get_chunk_type(tok, idx_to_tag):   
+    if torch.is_tensor(tok):
+        tok = tok.item()
     tag_name = idx_to_tag[tok]
     tag_class = tag_name.split('-')[0]
     tag_type = tag_name.split('-')[-1]
